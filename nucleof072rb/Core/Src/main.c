@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -66,6 +68,12 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+	uint8_t transmit[3] = {0b00000001, 0b10000000, 0b00000000}
+	uint8_t receive[3] = {};
+	int pulse = 0;
+
+
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -87,6 +95,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_SPI1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -95,6 +105,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);					//set CS line low
+
+	  HAL_SPI_TransmitReceive(&hspi1, transmit, receive, 3, 100);			//send and receive data
+
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);					//set CS line high
+
+	  uint16_t adc_outout = (receive[1] & 0b00000011)<<8 | recieve[2];		//take the relevant bits
+
+	  pulse = (adc_output/1023)*3200 + 3200;								//convert the ADC value into duty cycle
+
+	  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse);					// make PWM signal with the pulse
+
+	  HAL_Delay(10);
+
+	  /*
+	  if(receive[0] & 1<<7 == 0b10000000){
+
+		}
+	   */
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
