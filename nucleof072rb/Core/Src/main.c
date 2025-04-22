@@ -72,6 +72,8 @@ int main(void)
 	uint8_t receive[3] = {};
 	int pulse = 0;
 
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+
 
 
   /* USER CODE END 1 */
@@ -107,13 +109,13 @@ int main(void)
   {
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);					//set CS line low
 
-	  HAL_SPI_TransmitReceive(&hspi1, transmit, receive, 3, 100);			//send and receive data
+	  HAL_SPI_TransmitReceive(&hspi1, transmit, receive, 3, HAL_MAX_DELAY);			//send and receive data
 
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);					//set CS line high
 
-	  uint16_t adc_outout = (receive[1] & 0b00000011)<<8 | recieve[2];		//take the relevant bits
+	  uint16_t adc_outout = (receive[1] & 0b00000011)<<8 | receive[2];		//take the relevant bits
 
-	  pulse = (adc_output/1023)*3200 + 3200;								//convert the ADC value into duty cycle
+	  pulse = (adc_output/1023.0)*3200 + 3200;								//convert the ADC value into duty cycle
 
 	  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pulse);					// make PWM signal with the pulse
 
